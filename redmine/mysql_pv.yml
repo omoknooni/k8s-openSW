@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-vol
+  labels:
+    type: nfs
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes: ["ReadWriteMany"]
+  nfs:
+    server: 192.168.10.17
+    path: /share/mysql
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-vol-claim
+spec:
+  storageClassName: ""
+  accessModes: ["ReadWriteMany"]
+  resources:
+    requests:
+      storage: 1Gi
+  selector:
+    matchExpressions:
+      - key: type
+        operator: In
+        values:
+          - nfs

@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb
+spec:
+  selector:
+    matchLabels:
+      app: mariadb
+  serviceName: mariadb
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+      - name: mariadb
+        image: mariadb
+        ports:
+        - containerPort: 3306
+          name: mariadb
+        volumeMounts:
+        - name: mariadb-vol
+          mountPath: /var/lib/mysql
+        - name: mariadb-conf
+          mountPath: /etc/mysql/mariadb.conf.d
+        env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mariadb-secret
+                key: password
+          - name: MYSQL_USER
+            valueFrom:
+                secretKeyRef:
+                  name: mariadb-secret
+                  key: userpass
+          - name: MYSQL_PASSWORD
+      volumes: 
+        - name: mariadb-vol
+          persistentVolumeClaim:
+            claimName: mariadb-vol-claim
+        - name: mariadb-conf
+          nfs:
+            server: 192.168.10.17
+            path: /share/mariadb_conf
