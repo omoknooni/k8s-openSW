@@ -1,8 +1,9 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: redmine-deployment
+  name: redmine
 spec:
+  serviceName: redmine
   replicas: 1
   selector:
     matchLabels:
@@ -12,15 +13,22 @@ spec:
       labels:
         app: redmine
     spec:
-      nodeName: ip-192-168-10-108 
+      nodeName: ip-192-168-10-108
       containers:
       - name: redmine
         image: redmine:latest
-        env: 
+        env:
         - name: REDMINE_DB_MYSQL
           value: mysqldb
         - name: REDMINE_DB_PASSWORD
           valueFrom:
             secretKeyRef:
               name: mariadb-secret
-              key: password 
+              key: password
+        volumeMounts:
+          - name: redmine-vol
+            mountPath: /home/redmine
+      volumes:
+        - name: redmine-vol
+          persistentVolumeClaim:
+            claimName: redmine-vol-claim
